@@ -27,10 +27,10 @@ jobs:
       working-directory: terraform
 
     - name: Terraform Plan
-      run: terraform plan
+      run: terraform plan -var-file=terraform.tfvars -auto-approve
       working-directory: terraform
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve
+      run: terraform apply -var-file=terraform.tfvars -auto-approve
       working-directory: terraform

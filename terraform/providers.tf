@@ -20,8 +20,8 @@ terraform {
 provider "azurerm" { 
     features {} 
       # Required for OIDC auth
-  tenant_id       = var.tenant_id
-  subscription_id = var.subscription_id
+    tenant_id       = var.tenant_id
+    subscription_id = var.subscription_id
 
   # Enables GitHub OIDC authentication
   use_oidc = true
