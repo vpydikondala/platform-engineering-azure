@@ -1,10 +1,9 @@
 🚀 Azure Platform Engineering – AKS Reference Platform
-
 Overview
 
-This repository contains an enterprise-grade Azure Platform Engineering implementation that provides a secure, multi-tenant AKS platform for application teams.
+This repository implements an enterprise-grade Azure Platform Engineering setup for AKS. It provides a secure, multi-tenant platform for application teams with automation, governance, and CI/CD pipelines.
 
-The platform is built using Terraform, Helm, and GitHub Actions, with security, governance, and automation by default.
+Built with: Terraform, Helm, and GitHub Actions.
 
 Architecture
 
@@ -12,15 +11,15 @@ Core components:
 
 Azure Kubernetes Service (AKS) with Azure AD integration
 
-Azure AD groups for RBAC (platform admins & team developers)
+Azure AD groups for RBAC (Platform Admins & Team Developers)
 
-Azure Key Vault for secrets (CSI Driver)
+Azure Key Vault for secrets (via CSI Driver)
 
 Ingress NGINX (shared platform ingress)
 
 Prometheus & Grafana for observability
 
-GitHub Actions with OIDC authentication
+GitHub Actions pipelines using OIDC authentication
 📷 See: diagrams/project1_platform.png
 
 Platform Capabilities
@@ -46,27 +45,29 @@ Ownership Model
 | Security & governance  | ✅             | ❌         |
 | Application deployment | ❌             | ✅         |
 
-CI/CD Overview
 
-Terraform pipeline provisions cloud infrastructure and RBAC
+CI/CD Pipelines
 
-Platform services pipeline installs ingress, monitoring, and CSI
+Terraform Pipeline – provisions infrastructure, namespaces, RBAC, and KeyVault.
 
-Application pipeline deploys apps via Helm per team namespace
+Platform Services Pipeline – deploys ingress, observability, and security manifests.
 
-All pipelines use OIDC authentication — no static secrets.
+Application Pipeline – deploys apps per team namespace using Helm.
+
+All pipelines use GitHub OIDC — no static secrets required.
+
 
 Developer Golden Path
 
 Developer added to Azure AD group
 
-Namespace & RBAC already available
+Namespace & RBAC are already available
 
-Commit Helm values
+Commit Helm values for the app
 
-CI/CD deploys application
+CI/CD deploys the application
 
-App exposed via ingress
+App exposed via Ingress
 
 Metrics available in Grafana
 
@@ -79,4 +80,19 @@ Default-deny network policies
 Namespace-level resource quotas
 
 Secrets managed via Azure Key Vault
+
+Folder & Module Structure (High-Level)
+├── .github/workflows       # GitHub Actions workflows
+├── diagrams                # Architecture diagrams
+├── helm-charts             # Helm charts for apps and generic templates
+├── terraform               # Terraform main files & modules
+│   └── modules
+│       ├── aad_groups
+│       ├── aks
+│       └── k8s_platform
+│           ├── apps
+│           └── platform/security/governance/network-policies
+└── README.md
+
+✅ Note: All platform components and app deployments are fully automated using Terraform and Helm, following production-grade patterns.
 
