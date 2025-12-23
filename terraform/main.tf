@@ -3,6 +3,7 @@ module "aks" {
   resource_group  = var.resource_group
   location        = var.location
   aks_name        = var.aks_name
+  dns_prefix      = var.dns_prefix
 }
 
 module "aad_groups" {
