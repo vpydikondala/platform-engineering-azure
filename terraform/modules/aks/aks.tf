@@ -20,12 +20,3 @@ resource "azurerm_kubernetes_cluster" "aks" {
     network_policy = "azure"
   }
 }
-
-output "kube_config" {
-  value     = azurerm_kubernetes_cluster.aks.kube_config[0]
-  sensitive = true
-}
-
-output "aks_name" {
-  value = azurerm_kubernetes_cluster.aks.name
-}
