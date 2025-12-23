@@ -4,6 +4,7 @@ module "aks" {
   location        = var.location
   aks_name        = var.aks_name
   dns_prefix      = var.dns_prefix
+  k8s_version         = var.k8s_version
 }
 
 module "aad_groups" {
@@ -19,6 +20,8 @@ module "keyvault" {
 
 module "k8s_platform" {
   source     = "./modules/k8s_platform"
+  cluster_name   = module.aks.aks_name
+  aks_module = module.aks  # pass the AKS module as input
   kubeconfig = module.aks.kube_config[0]
   teams      = var.teams
 }

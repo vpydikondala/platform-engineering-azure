@@ -1,8 +1,9 @@
+
 output "cluster_name" {
-  value = azurerm_kubernetes_cluster.aks.name
+  value = var.aks_module.aks_name
 }
 
 output "kube_config" {
-  value     = azurerm_kubernetes_cluster.aks.kube_config_raw
-  sensitive = true
+  value = var.aks_module.kube_config
 }
+

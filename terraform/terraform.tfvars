@@ -8,3 +8,4 @@ teams = {
 
 dns_prefix = "platformaks"
 
+k8s_version = "1.27.4"  # or the AKS version you want
