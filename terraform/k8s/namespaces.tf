@@ -1,10 +1,6 @@
 resource "kubernetes_namespace" "teams" {
-  for_each = local.teams
+  for_each = var.teams
   metadata {
-    name = each.key
-    labels = {
-      owner = each.key
-      env   = "nonprod"
-    }
+    name = each.value
   }
 }

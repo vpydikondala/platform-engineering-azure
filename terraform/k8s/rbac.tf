@@ -1,33 +1,32 @@
 resource "kubernetes_role" "team_role" {
-  for_each = local.teams
+  for_each = var.teams
   metadata {
-    name      = "${each.key}-role"
-    namespace = each.key
+    name      = "role-${each.key}"
+    namespace = each.value
   }
-
   rule {
     api_groups = [""]
-    resources  = ["pods","services","configmaps"]
-    verbs      = ["get","list","create","update","delete"]
+    resources  = ["pods"]
+    verbs      = ["get","list","watch"]
   }
+  depends_on = [kubernetes_namespace.teams]
 }
 
 resource "kubernetes_role_binding" "team_binding" {
-  for_each = local.teams
+  for_each = var.teams
   metadata {
-    name      = "${each.key}-binding"
-    namespace = each.key
+    name      = "binding-${each.key}"
+    namespace = each.value
   }
-
   role_ref {
-    kind = "Role"
-    name = kubernetes_role.team_role[each.key].metadata[0].name
     api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role.team_role[each.key].metadata[0].name
   }
-
   subject {
-    kind = "Group"
-    name = azuread_group.teams[each.key].display_name
+    kind      = "Group"
+    name      = each.key
     api_group = "rbac.authorization.k8s.io"
   }
+  depends_on = [kubernetes_role.team_role]
 }
