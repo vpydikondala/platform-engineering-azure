@@ -10,6 +10,12 @@ variable "resource_group_name" {
 variable "aks_name" {
   type = string
 }
+variable "teams" {
+  description = "List of application teams for AKS RBAC"
+  type        = list(string)
+  default     = ["team-a", "team-b"]  # optional, can override in tfvars
+}
+
 variable "tenant_id" {
   description = "Azure Tenant ID for OIDC authentication"
   type        = string
