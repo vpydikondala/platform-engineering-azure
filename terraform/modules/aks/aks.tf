@@ -2,10 +2,12 @@ resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_name
   location            = var.location
   resource_group_name = var.resource_group
+  dns_prefix          = var.dns_prefix
+  kubernetes_version  = var.k8s_version
 
   default_node_pool {
-    name       = "default"
-    node_count = 3
+    name       = "agentpool"
+    node_count = 2
     vm_size    = "Standard_DS2_v2"
   }
 
@@ -15,6 +17,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   network_profile {
     network_plugin = "azure"
+    network_policy = "azure"
   }
 }
 

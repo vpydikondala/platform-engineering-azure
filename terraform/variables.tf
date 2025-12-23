@@ -23,3 +23,7 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+variable "dns_prefix" {
+  type        = string
+  description = "DNS prefix for the AKS cluster"
+}

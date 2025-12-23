@@ -6,4 +6,5 @@ teams = {
   "team-b" = "team-b-namespace"
 }
 
+dns_prefix = "platformaks"
 
