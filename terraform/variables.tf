@@ -1,30 +1,25 @@
-variable "location" {
-  type    = string
-  default = "uksouth"
+variable "resource_group" {
+  description = "Azure Resource Group name"
+  type        = string
 }
 
-variable "resource_group_name" {
-  type = string
+variable "location" {
+  description = "Azure region"
+  type        = string
 }
 
 variable "aks_name" {
-  type = string
+  description = "AKS cluster name"
+  type        = string
 }
+
 variable "teams" {
-  description = "AKS Teams and namespaces mapping"
-  type        = map(string)
-  default = {
-    "team-a" = "team-a-namespace"
-    "team-b" = "team-b-namespace"
-  }
+  description = "Platform teams"
+  type        = list(string)
 }
 
-variable "tenant_id" {
-  description = "Azure Tenant ID for OIDC authentication"
+variable "db_password" {
+  description = "Database password stored in Key Vault"
   type        = string
-}
-
-variable "subscription_id" {
-  description = "Azure Subscription ID for Terraform"
-  type        = string
+  sensitive   = true
 }

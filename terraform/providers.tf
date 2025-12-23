@@ -20,11 +20,11 @@ terraform {
 
 provider "azurerm" { 
     features {} 
-      # Required for OIDC auth
-    tenant_id       = var.tenant_id
-    subscription_id = var.subscription_id
-
-  # Enables GitHub OIDC authentication
-  use_oidc = true
-    }
+}
+provider "kubernetes" {
+  host                   = module.aks.kube_config[0].host
+  client_certificate     = base64decode(module.aks.kube_config[0].client_certificate)
+  client_key             = base64decode(module.aks.kube_config[0].client_key)
+  cluster_ca_certificate = base64decode(module.aks.kube_config[0].cluster_ca_certificate)
+  }
 provider "azuread" {}

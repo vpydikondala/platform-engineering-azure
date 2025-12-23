@@ -2,6 +2,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: team-b-ingress
+  namespace: team-b-namespace
+  annotations:
+    kubernetes.io/ingress.class: nginx
 spec:
   ingressClassName: nginx
   rules:
@@ -12,6 +15,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: team-b-app
+            name: generic-app # match the Helm deployed service
             port:
               number: 80

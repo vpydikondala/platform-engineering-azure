@@ -1,0 +1,62 @@
+name: Deploy Applications to AKS
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "helm-charts/**"
+      - "k8s/apps/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AKS_RESOURCE_GROUP: rg-platform-engineering
+  AKS_CLUSTER_NAME: aks-platform
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS Credentials
+        run: |
+          az aks get-credentials \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --name $AKS_CLUSTER_NAME \
+            --overwrite-existing
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy Team A App
+        run: |
+          helm upgrade --install team-a-app ./helm-charts/generic-app \
+            -n team-a-namespace \
+            -f helm-charts/team-a/helm-values.yaml
+
+      - name: Deploy Team B App
+        run: |
+          helm upgrade --install team-b-app ./helm-charts/generic-app \
+            -n team-b-namespace \
+            -f helm-charts/team-b/helm-values.yaml
+
+      - name: Apply Ingress
+        run: |
+          kubectl apply -f k8s/apps/team-a/ingress.yaml
+          kubectl apply -f k8s/apps/team-b/ingress.yaml
