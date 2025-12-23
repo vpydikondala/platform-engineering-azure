@@ -1,17 +1,18 @@
 resource "kubernetes_role" "team_role" {
-  for_each = var.teams
+  for_each = toset(var.teams)   # Convert list to set
 
   metadata {
-    name      = "${each.key}-role"
-    namespace = each.key
+    name = each.value
+    namespace = "team-${each.value}"
   }
 
   rule {
     api_groups = [""]
-    resources  = ["pods", "services", "configmaps"]
-    verbs      = ["get", "list", "create", "update", "delete"]
+    resources  = ["pods"]
+    verbs      = ["get", "list", "watch"]
   }
 }
+
 
 resource "kubernetes_role_binding" "team_binding" {
   for_each = var.teams
