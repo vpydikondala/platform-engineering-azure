@@ -1,3 +1,8 @@
+resource "local_file" "kubeconfig" {
+  filename = "${path.module}/aks.kubeconfig"
+  content  = yamlencode(module.aks.kube_config)
+}
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_name
   location            = var.location
