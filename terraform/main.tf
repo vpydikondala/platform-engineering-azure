@@ -1,3 +1,4 @@
+data "azurerm_client_config" "current" {}
 module "aks" {
   source          = "./modules/aks"
   resource_group  = var.resource_group
