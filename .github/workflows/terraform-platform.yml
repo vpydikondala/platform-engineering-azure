@@ -56,17 +56,20 @@ jobs:
         working-directory: terraform
 
       # 2) Create kubeconfig for Terraform Kubernetes provider
-      - name: Install kubelogin
-        uses: Azure/use-kubelogin@v1
-
+      - name: Install kubelogin (via Azure CLI)
+        run: az aks install-cli
       - name: Get AKS kubeconfig
         run: |
           mkdir -p $GITHUB_WORKSPACE/terraform/.kube
           az aks get-credentials -g "$AKS_RG" -n "$AKS_NAME" \
             --file $GITHUB_WORKSPACE/terraform/.kube/config --overwrite-existing
+
           kubelogin convert-kubeconfig -l azurecli \
             --kubeconfig $GITHUB_WORKSPACE/terraform/.kube/config
-          kubectl --kubeconfig $GITHUB_WORKSPACE/terraform/.kube/config get ns
+
+          echo "KUBECONFIG=$GITHUB_WORKSPACE/terraform/.kube/config" >> $GITHUB_ENV
+          kubectl get nodes
+
 
       # 3) Now plan/apply the full stack (including kubernetes_manifest)
       - name: Terraform Plan
