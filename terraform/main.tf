@@ -39,7 +39,7 @@ module "secret_provider_class" {
     }
   ]
    # Ensure Terraform knows the dependency
-  depends_on = [module.keyvault]
+ depends_on = [module.keyvault, module.k8s_platform_namespaces]
 }
 
 
