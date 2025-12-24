@@ -60,6 +60,18 @@ jobs:
           az version
           az extension list -o table
           az extension remove -n aks-preview || true
+      - name: Install kubelogin (deterministic)
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y unzip
+          curl -sL https://github.com/Azure/kubelogin/releases/download/v0.2.13/kubelogin-linux-amd64.zip -o /tmp/kubelogin.zip
+          sudo unzip -o /tmp/kubelogin.zip -d /usr/local/bin
+          sudo chmod +x /usr/local/bin/kubelogin
+          echo "/usr/local/bin" >> $GITHUB_PATH
+          which kubelogin
+          kubelogin --version
+
       - name: Convert kubeconfig for AAD
         run: |
           echo "KUBECONFIG=$GITHUB_WORKSPACE/terraform/.kube/config" >> $GITHUB_ENV
