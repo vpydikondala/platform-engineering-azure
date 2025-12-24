@@ -46,3 +46,6 @@ variable "tenant_id" {
     type = string
     description = "Azure tenant ID"
 }
+variable "aks_depends_on" {
+  type = any
+}

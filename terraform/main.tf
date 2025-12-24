@@ -49,6 +49,6 @@ module "k8s_platform" {
   kubeconfig    = module.aks.kube_config
   teams         = var.teams
 
-  aks_depends_on = [module.aks]
+  aks_depends_on = [module.aks, module.aad_groups]
 }
 
