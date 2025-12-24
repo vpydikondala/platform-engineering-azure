@@ -28,7 +28,7 @@ resource "kubernetes_manifest" "secretproviderclass" {
 
 # Direct dependency
   depends_on = [
-    tes_namespace.namespaces
+    kubernetes_namespace.namespaces
   ]
 }
 
