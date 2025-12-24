@@ -14,8 +14,8 @@ variable "aks_name" {
 }
 
 variable "teams" {
-  description = "Platform teams"
-  type        = list(string)
+  type = set(string)
+  default = ["team-a", "team-b"]
 }
 
 variable "db_password" {

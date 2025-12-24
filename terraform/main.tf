@@ -9,6 +9,7 @@ module "aks" {
 
 module "aad_groups" {
   source = "./modules/aad_groups"
+    teams  = var.teams
 }
 
 module "keyvault" {
@@ -24,4 +25,8 @@ module "k8s_platform" {
   aks_module = module.aks  # pass the AKS module as input
   kubeconfig = module.aks.kube_config[0]
   teams      = var.teams
+    depends_on = [
+    module.aks,        # ensures AKS exists first
+    module.aad_groups  # ensures AD groups exist first
+  ]
 }
