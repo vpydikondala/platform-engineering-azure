@@ -22,7 +22,7 @@ resource "kubernetes_role_binding" "team_binding" {
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "Role"
-    name      = kubernetes_role.team_role[each.key].metadata[0].name
+    name      = kubernetes_role_v1.team_role[each.key].metadata[0].name
   }
 
   subject {
