@@ -7,12 +7,6 @@ module "aks" {
   dns_prefix      = var.dns_prefix
   k8s_version         = var.k8s_version
 }
-resource "local_file" "kubeconfig" {
-  filename = "${path.module}/aks.kubeconfig"
-  content  = yamlencode(module.aks.kube_config)  # Converts object to YAML string
-}
-
-
 
 module "aad_groups" {
   source = "./modules/aad_groups"
