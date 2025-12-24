@@ -38,7 +38,8 @@ module "secret_provider_class" {
       objectType = "secret"
     }
   ]
- 
+   # Ensure Terraform knows the dependency
+  depends_on = [module.keyvault]
 }
 
 
