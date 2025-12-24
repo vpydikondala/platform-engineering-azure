@@ -1,39 +1,23 @@
 ##############################
-# SecretProviderClass
-##############################
-resource "kubernetes_manifest" "secretproviderclass" {
-  for_each = { for obj in var.objects : obj.objectName => obj }
-
-  manifest = {
-    apiVersion = "secrets-store.csi.x-k8s.io/v1"
-    kind       = "SecretProviderClass"
-    metadata = {
-      name      = "azure-keyvault"
-      namespace = var.platform_namespace
-    }
-    spec = {
-      provider   = "azure"
-      parameters = {
-        keyvaultName = var.keyvault_name
-        tenantId     = var.tenant_id
-        objects      = jsonencode([
-          for o in var.objects : {
-            objectName = o.objectName
-            objectType = o.objectType
-          }
-        ])
-      }
-    }
-  }
-
-
-}
-
-##############################
 # CSI Driver
 ##############################
 resource "kubernetes_manifest" "csi_driver" {
   manifest = yamldecode(file("${path.module}/csi-driver.yaml"))
-  
-  depends_on = [kubernetes_manifest.secretproviderclass]
+
+  # Make sure namespaces exist before installing
+  depends_on = [kubernetes_namespace.namespaces]
+}
+
+##############################
+# SecretProviderClass for Azure Key Vault
+##############################
+resource "kubernetes_manifest" "secretproviderclass" {
+  manifest = yamldecode(templatefile("${path.module}/secret-provider-class.yaml.tpl", {
+    keyvault_name      = var.keyvault_name
+    tenant_id          = var.tenant_id
+    platform_namespace = var.platform_namespace
+    objects            = jsonencode(var.objects)
+  }))
+
+  depends_on = [kubernetes_namespace.namespaces, kubernetes_manifest.csi_driver]
 }

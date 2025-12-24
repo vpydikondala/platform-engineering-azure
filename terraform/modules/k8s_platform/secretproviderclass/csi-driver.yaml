@@ -1,4 +1,28 @@
-helm:
-  repo: https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
-  chart: secrets-store-csi-driver
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: csi-secrets-store
   namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: csi-secrets-store
+  template:
+    metadata:
+      labels:
+        app: csi-secrets-store
+    spec:
+      serviceAccountName: csi-secrets-store-sa
+      containers:
+      - name: csi-secrets-store
+        image: mcr.microsoft.com/k8s/csi/secrets-store/azure:v0.0.25
+        args:
+        - "--v=5"
+        volumeMounts:
+        - name: secrets-store
+          mountPath: /mnt/secrets-store
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
