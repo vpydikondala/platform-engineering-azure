@@ -37,7 +37,7 @@ module "secret_provider_class" {
       objectType = "secret"
     }
   ]
-  depends_on = [module.keyvault, kubernetes_namespace.namespaces]
+ 
 }
 
 
