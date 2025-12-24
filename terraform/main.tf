@@ -47,6 +47,7 @@ module "k8s_platform" {
  source        = "./modules/k8s_platform"
    providers = {
     kubernetes = kubernetes.aks
+    helm       = helm.aks
   }
  cluster_name  = module.aks.aks_name
  kubeconfig    = module.aks.kube_config

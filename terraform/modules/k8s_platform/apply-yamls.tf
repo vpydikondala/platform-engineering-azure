@@ -26,10 +26,12 @@ locals {
 }
 
 resource "kubernetes_manifest" "platform_yaml" {
-  for_each = toset(local.platform_yamls)
-  manifest = yamldecode(file(each.value))
-   # Pass from root module
+  for_each = fileset(path.module, "platform/**/*.yaml")
+
+  manifest = yamldecode(file("${path.module}/${each.value}"))
 }
+
+
 
 
 

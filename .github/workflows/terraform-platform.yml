@@ -14,14 +14,19 @@ jobs:
     permissions:
       id-token: write
       contents: read
+
     env:
       ARM_USE_OIDC: true
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      # Option 1 (recommended): set these as GitHub Repo Variables
+      AKS_RG: ${{ vars.AKS_RG }}
+      AKS_NAME: ${{ vars.AKS_NAME }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
 
-      # Login to Azure via OIDC
       - name: Azure Login via OIDC
         uses: azure/login@v1
         with:
@@ -29,13 +34,45 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           allow-no-subscriptions: true
+
       - name: Terraform Init
         run: terraform init -upgrade
-
         working-directory: terraform
+      - name: Show Terraform & provider versions
+        working-directory: terraform
+        run: |
+          terraform version
+          terraform providers
+      - name: Show locked provider versions
+        working-directory: terraform
+        run: |
+          sed -n '/provider "registry.terraform.io\/hashicorp\/helm"/,/^}/p' .terraform.lock.hcl || true
+          sed -n '/provider "registry.terraform.io\/hashicorp\/kubernetes"/,/^}/p' .terraform.lock.hcl || true
+
+
+      # 1) Bootstrap AKS first so kubeconfig exists
+      - name: Terraform Apply AKS Bootstrap
+        run: terraform apply -var-file=terraform.tfvars -auto-approve -target=module.aks
+        working-directory: terraform
+
+      # 2) Create kubeconfig for Terraform Kubernetes provider
+      - name: Install kubelogin
+        uses: Azure/use-kubelogin@v1
+
+      - name: Get AKS kubeconfig
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/terraform/.kube
+          az aks get-credentials -g "$AKS_RG" -n "$AKS_NAME" \
+            --file $GITHUB_WORKSPACE/terraform/.kube/config --overwrite-existing
+          kubelogin convert-kubeconfig -l azurecli \
+            --kubeconfig $GITHUB_WORKSPACE/terraform/.kube/config
+          kubectl --kubeconfig $GITHUB_WORKSPACE/terraform/.kube/config get ns
+
+      # 3) Now plan/apply the full stack (including kubernetes_manifest)
       - name: Terraform Plan
         run: terraform plan -var-file=terraform.tfvars
         working-directory: terraform
+
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -var-file=terraform.tfvars -auto-approve

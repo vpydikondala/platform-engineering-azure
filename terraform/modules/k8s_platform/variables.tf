@@ -1,12 +1,11 @@
 variable "teams" {
-  type = set(string)
-  default = ["team-a", "team-b"]
+  type = list(string)
 }
 
 variable "cluster_name" {
-  type        = string
-  description = "Name of the AKS cluster"
+  type = string
 }
+
 variable "kubeconfig" {
   type = any
 }
