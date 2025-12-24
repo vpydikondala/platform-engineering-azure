@@ -1,4 +1,4 @@
-data "azurerm_client_config" "current" {}
+#data "azurerm_client_config" "current" {}
 module "aks" {
   source          = "./modules/aks"
   resource_group  = var.resource_group
@@ -30,7 +30,7 @@ resource "kubernetes_namespace_v1" "platform" {
 module "secret_provider_class" {
   source            = "./modules/k8s_platform/secretproviderclass"
   keyvault_name     = module.keyvault.keyvault_name
-  tenant_id         = data.azurerm_client_config.current.tenant_id
+  tenant_id         = var.tenant_id
   platform_namespace = "platform-observability"
   objects           = [
     {
