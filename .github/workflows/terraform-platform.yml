@@ -29,7 +29,8 @@ jobs:
           allow-no-subscriptions: true
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -reconfigure -lock=false
+
         working-directory: terraform
 
       - name: Terraform Plan
