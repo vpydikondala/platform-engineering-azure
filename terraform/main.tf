@@ -6,6 +6,11 @@ module "aks" {
   dns_prefix      = var.dns_prefix
   k8s_version         = var.k8s_version
 }
+resource "local_file" "kubeconfig" {
+  content  = module.aks.kube_config
+  filename = "./aks.kubeconfig"
+  depends_on = [module.aks]
+}
 
 module "aad_groups" {
   source = "./modules/aad_groups"

@@ -10,3 +10,8 @@ variable "k8s_version" {
   description = "Kubernetes version for the AKS cluster"
 }
 
+variable "kubeconfig_path" {
+  type        = string
+  default     = "./aks.kubeconfig"
+  description = "Path to kubeconfig file generated from AKS module"
+}

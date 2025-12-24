@@ -36,3 +36,8 @@ variable "aks_module" {
   type        = any
   description = "Reference to the AKS module to get cluster outputs"
 }
+variable "kubeconfig_path" {
+  type        = string
+  default     = "./aks.kubeconfig"
+  description = "Path to kubeconfig file generated from AKS module"
+}
