@@ -26,12 +26,14 @@ locals {
 }
 
 resource "kubernetes_manifest" "platform_yaml" {
-  for_each = toset(local.platform_yamls)
+  for_each = local.platform_yamls
 
   manifest = yamldecode(file(each.value))
 
-  depends_on = [kubernetes_namespace.namespaces]
+  depends_on = [module.aks]  # Ensure AKS cluster exists first
 }
+
+
 
 ##############################
 # Helm Release: Observability (Prometheus + Grafana)

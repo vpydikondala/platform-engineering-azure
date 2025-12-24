@@ -8,9 +8,10 @@ module "aks" {
   k8s_version         = var.k8s_version
 }
 resource "local_file" "kubeconfig" {
-  content  = module.aks.kube_config.raw_kube_config   # or module.aks.kube_config.kube_config depending on your output
-  filename = "./aks.kubeconfig"
+  filename = "${path.module}/aks.kubeconfig"
+  content  = yamlencode(module.aks.kube_config)  # Converts object to YAML string
 }
+
 
 
 module "aad_groups" {
@@ -52,7 +53,8 @@ module "k8s_platform" {
   source     = "./modules/k8s_platform"
   cluster_name   = module.aks.aks_name
   # pass the AKS module as input
-  kubeconfig = module.aks.kube_config[0]
+  kubeconfig = module.aks.kube_config
+
   teams      = var.teams
     depends_on = [
     module.aks,        # ensures AKS exists first
