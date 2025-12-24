@@ -27,21 +27,21 @@ terraform {
 # Azure provider
 provider "azurerm" { 
   features {} 
-  subscription_id = "b603af5d-ccdb-4fa9-aa9d-abe1b070d49f"
+  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
   # Enable OIDC login for GitHub Actions
   use_oidc = true
 }
 
 # Kubernetes provider (AKS)
 # Kubernetes provider
+# main.tf
 provider "kubernetes" {
   host                   = module.aks.kube_config.host
   client_certificate     = base64decode(module.aks.kube_config.client_certificate)
   client_key             = base64decode(module.aks.kube_config.client_key)
   cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
 }
-
-
 
 # AzureAD provider
 provider "azuread" {}
