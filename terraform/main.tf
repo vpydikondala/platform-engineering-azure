@@ -19,7 +19,7 @@ module "aad_groups" {
 
 # Key Vault module
 module "keyvault" {
-  source         = "./modules/keyvault"
+  source         = "./modules/k8s_platform/keyvault"
   resource_group = var.resource_group
   location       = var.location
   db_password    = var.db_password
@@ -27,7 +27,7 @@ module "keyvault" {
 
 # SecretProviderClass module
 module "secret_provider_class" {
-  source            = "./modules/secretproviderclass"
+  source            = "./modules/k8s_platform/secretproviderclass"
   keyvault_name     = module.keyvault.keyvault_name
   tenant_id         = data.azurerm_client_config.current.tenant_id
   platform_namespace = "platform-observability"
