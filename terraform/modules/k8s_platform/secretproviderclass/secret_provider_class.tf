@@ -5,7 +5,7 @@ resource "kubernetes_manifest" "csi_driver" {
   manifest = yamldecode(file("${path.module}/csi-driver.yaml"))
 
   # Make sure namespaces exist before installing
-  depends_on = [kubernetes_namespace.namespaces]
+
 }
 
 ##############################
