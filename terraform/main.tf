@@ -21,7 +21,7 @@ module "keyvault" {
   db_password    = var.db_password
 }
 
-resource "kubernetes_namespace" "platform" {
+resource "kubernetes_namespace_v1" "platform" {
   metadata {
     name = "platform-observability"
   }
