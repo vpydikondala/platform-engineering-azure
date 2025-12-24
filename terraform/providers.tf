@@ -27,6 +27,7 @@ terraform {
 # Azure provider
 provider "azurerm" { 
   features {} 
+  subscription_id = "b603af5d-ccdb-4fa9-aa9d-abe1b070d49f"
   # Enable OIDC login for GitHub Actions
   use_oidc = true
 }
