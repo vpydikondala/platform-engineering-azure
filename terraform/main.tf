@@ -26,6 +26,11 @@ module "keyvault" {
   db_password    = var.db_password
 }
 
+resource "kubernetes_namespace" "platform" {
+  metadata {
+    name = "platform-observability"
+  }
+}
 # SecretProviderClass module
 module "secret_provider_class" {
   source            = "./modules/k8s_platform/secretproviderclass"
@@ -39,7 +44,7 @@ module "secret_provider_class" {
     }
   ]
    # Ensure Terraform knows the dependency
- depends_on = [module.keyvault,module.k8s_platform]
+ depends_on = [module.keyvault,module.k8s_platform,kubernetes_namespace.platform]
 }
 
 
