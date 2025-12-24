@@ -2,7 +2,7 @@
 # Create Namespaces
 ##############################
 
-resource "kubernetes_namespace" "namespaces" {
+resource "kubernetes_namespace_v1" "namespaces" {
   for_each = toset(var.teams)  # use var.teams for multi-team namespaces
 
   metadata {
@@ -45,7 +45,7 @@ resource "helm_release" "observability" {
   create_namespace = true
   values           = [file("${path.module}/platform/observability/values.yaml")]
 
-  depends_on = [kubernetes_namespace.namespaces]
+  depends_on = [kubernetes_namespace_v1.namespaces]
 }
 
 ##############################
@@ -59,5 +59,5 @@ resource "helm_release" "ingress" {
   create_namespace = true
   values           = [file("${path.module}/platform/ingress/values.yaml")]
 
-  depends_on = [kubernetes_namespace.namespaces]
+  depends_on = [kubernetes_namespace_v1.namespaces]
 }

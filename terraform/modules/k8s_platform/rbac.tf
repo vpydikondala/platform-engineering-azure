@@ -1,4 +1,4 @@
-resource "kubernetes_role" "team_role" {
+resource "kubernetes_role_v1" "team_role" {
   for_each = toset(var.teams)
   metadata {
     name      = "${each.value}-role"
