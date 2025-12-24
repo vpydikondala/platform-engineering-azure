@@ -26,7 +26,11 @@ resource "kubernetes_manifest" "secretproviderclass" {
     }
   }
 
-  depends_on = var.depends_on
+# Direct dependency
+  depends_on = [
+    module.keyvault,
+    kubernetes_namespace.namespaces
+  ]
 }
 
 ##############################
