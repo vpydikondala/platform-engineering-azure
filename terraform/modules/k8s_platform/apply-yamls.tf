@@ -3,7 +3,7 @@
 ##############################
 
 resource "kubernetes_namespace_v1" "namespaces" {
-  for_each = toset(var.teams)  # use var.teams for multi-team namespaces
+  for_each = toset(var.teams)
 
   metadata {
     name = "${each.key}-namespace"
@@ -11,30 +11,45 @@ resource "kubernetes_namespace_v1" "namespaces" {
 }
 
 ##############################
-# Apply Platform YAMLs
+# Apply Platform YAMLs (per team namespace)
+# - Only apply real Kubernetes manifests (exclude Helm values/chart YAMLs)
+# - Force namespace for resources that require it (NetworkPolicy, ResourceQuota, LimitRange)
 ##############################
 
 locals {
-  platform_yamls = [
-    "${path.module}/platform/governance/limit-range.yaml",
-    "${path.module}/platform/governance/resource-quota.yaml",
-    "${path.module}/platform/network-policies/default-deny.yaml",
-    "${path.module}/platform/network-policies/allow-ingress.yaml",
-   # "${path.module}/platform/security/secret-provider-class.yaml",
-    #"${path.module}/platform/security/csi-driver.yaml"
-  ]
+  team_namespaces = [for t in var.teams : "${t}-namespace"]
+
+  # Only include folders that contain Kubernetes manifests (NOT Helm values.yaml)
+  platform_manifest_files = concat(
+    fileset(path.module, "platform/governance/*.yaml"),
+    fileset(path.module, "platform/network-policies/*.yaml")
+  )
+
+  # Build a matrix of (namespace x manifest file)
+  team_manifest_matrix = {
+    for pair in setproduct(local.team_namespaces, local.platform_manifest_files) :
+    "${pair[0]}::${pair[1]}" => {
+      namespace = pair[0]
+      file      = pair[1]
+    }
+  }
 }
 
 resource "kubernetes_manifest" "platform_yaml" {
-  for_each = fileset(path.module, "platform/**/*.yaml")
+  for_each = local.team_manifest_matrix
 
-  manifest = yamldecode(file("${path.module}/${each.value}"))
+  manifest = merge(
+    yamldecode(file("${path.module}/${each.value.file}")),
+    {
+      metadata = merge(
+        try(yamldecode(file("${path.module}/${each.value.file}")).metadata, {}),
+        { namespace = each.value.namespace }
+      )
+    }
+  )
+
+  depends_on = [kubernetes_namespace_v1.namespaces]
 }
-
-
-
-
-
 
 ##############################
 # Helm Release: Observability (Prometheus + Grafana)
@@ -57,7 +72,7 @@ resource "helm_release" "observability" {
 resource "helm_release" "ingress" {
   name             = "nginx-ingress"
   namespace        = "platform-ingress"
-  chart            = "ingress-nginx/ingress-nginx"  # Public chart from stable repo
+  chart            = "ingress-nginx/ingress-nginx"
   create_namespace = true
   values           = [file("${path.module}/platform/ingress/values.yaml")]
 
