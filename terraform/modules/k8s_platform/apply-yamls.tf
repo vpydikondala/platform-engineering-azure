@@ -20,8 +20,8 @@ locals {
     "${path.module}/platform/governance/resource-quota.yaml",
     "${path.module}/platform/network-policies/default-deny.yaml",
     "${path.module}/platform/network-policies/allow-ingress.yaml",
-    "${path.module}/platform/security/secret-provider-class.yaml",
-    "${path.module}/platform/security/csi-driver.yaml"
+   # "${path.module}/platform/security/secret-provider-class.yaml",
+    #"${path.module}/platform/security/csi-driver.yaml"
   ]
 }
 

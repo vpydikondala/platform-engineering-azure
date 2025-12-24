@@ -35,11 +35,12 @@ provider "azurerm" {
 # Kubernetes provider (AKS)
 # Kubernetes provider
 provider "kubernetes" {
-  host                   = module.aks.kube_config["host"]
-  client_certificate     = base64decode(module.aks.kube_config["client_certificate"])
-  client_key             = base64decode(module.aks.kube_config["client_key"])
-  cluster_ca_certificate = base64decode(module.aks.kube_config["cluster_ca_certificate"])
+  host                   = module.aks.kube_config.host
+  client_certificate     = base64decode(module.aks.kube_config.client_certificate)
+  client_key             = base64decode(module.aks.kube_config.client_key)
+  cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
 }
+
 
 
 # AzureAD provider

@@ -8,10 +8,10 @@ module "aks" {
   k8s_version         = var.k8s_version
 }
 resource "local_file" "kubeconfig" {
-  content  = module.aks.kube_config
+  content  = module.aks.kube_config.raw_kube_config   # or module.aks.kube_config.kube_config depending on your output
   filename = "./aks.kubeconfig"
-  depends_on = [module.aks]
 }
+
 
 module "aad_groups" {
   source = "./modules/aad_groups"
