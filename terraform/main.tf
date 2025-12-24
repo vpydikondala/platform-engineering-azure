@@ -17,17 +17,34 @@ module "aad_groups" {
     teams  = var.teams
 }
 
+# Key Vault module
 module "keyvault" {
-  source         = "./modules/k8s_platform/security"
+  source         = "./modules/keyvault"
   resource_group = var.resource_group
   location       = var.location
   db_password    = var.db_password
 }
 
+# SecretProviderClass module
+module "secret_provider_class" {
+  source            = "./modules/secretproviderclass"
+  keyvault_name     = module.keyvault.keyvault_name
+  tenant_id         = data.azurerm_client_config.current.tenant_id
+  platform_namespace = "platform-observability"
+  objects           = [
+    {
+      objectName = "grafana-admin-password"
+      objectType = "secret"
+    }
+  ]
+  depends_on = [module.keyvault, kubernetes_namespace.namespaces]
+}
+
+
 module "k8s_platform" {
   source     = "./modules/k8s_platform"
   cluster_name   = module.aks.aks_name
-  aks_module = module.aks  # pass the AKS module as input
+  # pass the AKS module as input
   kubeconfig = module.aks.kube_config[0]
   teams      = var.teams
     depends_on = [

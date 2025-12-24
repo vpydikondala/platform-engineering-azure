@@ -15,8 +15,14 @@ resource "azurerm_key_vault" "platform_kv" {
   purge_protection_enabled    = true
   }
 
-resource "azurerm_key_vault_secret" "db_password" {
-  name         = "db-password"
+resource "azurerm_key_vault_secret" "grafana_admin_password" {
+  name         = "grafana-admin-password"
   value        = var.db_password
-  key_vault_id = azurerm_key_vault.platform_kv.id
+  key_vault_id = resource.azurerm_key_vault.platform_kv.id
+
+  depends_on = [
+    resource.azurerm_key_vault.platform_kv
+  ]
 }
+
+

@@ -18,11 +18,7 @@ variable "teams" {
   default = ["team-a", "team-b"]
 }
 
-variable "db_password" {
-  description = "Database password stored in Key Vault"
-  type        = string
-  sensitive   = true
-}
+
 variable "dns_prefix" {
   type        = string
   description = "DNS prefix for the AKS cluster"
@@ -31,7 +27,11 @@ variable "k8s_version" {
   type        = string
   description = "Kubernetes version for the AKS cluster"
 }
-
+variable "db_password" {
+  type        = string
+  description = "Grafana admin password (injected from GitHub Actions)"
+  sensitive   = true
+}
 
 variable "kubeconfig_path" {
   type        = string
