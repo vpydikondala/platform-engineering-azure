@@ -52,19 +52,25 @@ jobs:
 
       # 1) Bootstrap AKS first so kubeconfig exists
       - name: Terraform Apply AKS Bootstrap
-        run: terraform apply -var-file=terraform.tfvars -auto-approve -target=module.aks
+        run: terraform apply -var-file=terraform.tfvars -auto-approve -target=azurerm_resource_group.platform -target=module.aks
         working-directory: terraform
-      - name: Ensure Azure CLI AKS extension is clean
+
+      - name: Azure CLI diagnostics
         run: |
           az version
+          az extension list -o table
           az extension remove -n aks-preview || true
-          az extension remove -n aks || true
-          az extension add -n aks --upgrade
-          az extension update --name aks || true
+      - name: Convert kubeconfig for AAD
+        run: |
+          echo "KUBECONFIG=$GITHUB_WORKSPACE/terraform/.kube/config" >> $GITHUB_ENV
+          kubelogin convert-kubeconfig -l azurecli --kubeconfig $KUBECONFIG
+          kubectl get nodes
 
       # 2) Create kubeconfig for Terraform Kubernetes provider
       - name: Install kubelogin (via Azure CLI)
         run: az aks install-cli
+      - name: Verify Azure context
+        run: az account show -o table
       - name: Get AKS kubeconfig
         run: |
           mkdir -p $GITHUB_WORKSPACE/terraform/.kube
