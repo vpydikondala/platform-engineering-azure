@@ -15,6 +15,3 @@ variable "namespaces" {
   default = ["team-a-namespace", "team-b-namespace", "platform-observability", "platform-ingress"]
 }
 
-variable "aks_depends_on" {
-  type = any
-}
