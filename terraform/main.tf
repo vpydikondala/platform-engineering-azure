@@ -1,7 +1,7 @@
 #data "azurerm_client_config" "current" {}
 module "aks" {
   source          = "./modules/aks"
-  resource_group  = var.resource_group
+  resource_group  = azurerm_resource_group.platform.name
   location        = var.location
   aks_name        = var.aks_name
   dns_prefix      = var.dns_prefix
