@@ -19,13 +19,12 @@ resource "kubernetes_namespace_v1" "namespaces" {
 locals {
   team_namespaces = [for t in var.teams : "${t}-namespace"]
 
-  # Only include folders that contain Kubernetes manifests (NOT Helm values.yaml)
+  # fileset() returns a set(string) -> convert to list before concat
   platform_manifest_files = concat(
-    fileset(path.module, "platform/governance/*.yaml"),
-    fileset(path.module, "platform/network-policies/*.yaml")
+    tolist(fileset(path.module, "platform/governance/*.yaml")),
+    tolist(fileset(path.module, "platform/network-policies/*.yaml"))
   )
 
-  # Build a matrix of (namespace x manifest file)
   team_manifest_matrix = {
     for pair in setproduct(local.team_namespaces, local.platform_manifest_files) :
     "${pair[0]}::${pair[1]}" => {
