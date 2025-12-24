@@ -32,10 +32,7 @@ variable "k8s_version" {
   description = "Kubernetes version for the AKS cluster"
 }
 
-variable "aks_module" {
-  type        = any
-  description = "Reference to the AKS module to get cluster outputs"
-}
+
 variable "kubeconfig_path" {
   type        = string
   default     = "./aks.kubeconfig"
