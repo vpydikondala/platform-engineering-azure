@@ -53,7 +53,7 @@ data "azurerm_kubernetes_cluster" "aks" {
   depends_on          = [module.aks]
 }
 
-data "azurerm_client_config" "current" {}
+# data "azurerm_client_config" "current" {}
 
 provider "kubernetes" {
   alias                  = "aks"
