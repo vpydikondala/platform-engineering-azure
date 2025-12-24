@@ -1,9 +1,62 @@
-resource "kubernetes_manifest" "platform_yaml" {
-  for_each = kubernetes_namespace.namespaces
+##############################
+# Create Namespaces
+##############################
 
-  manifest = yamldecode(file("${path.module}/platform/observability/values.yaml"))
+resource "kubernetes_namespace" "namespaces" {
+  for_each = { for ns in var.namespaces : ns => ns }
 
-  depends_on = [
-    kubernetes_namespace.namespaces
+  metadata {
+    name = each.key
+  }
+}
+
+##############################
+# Apply Platform YAMLs
+##############################
+
+locals {
+  platform_yamls = [
+    "${path.module}/platform/governance/limit-range.yaml",
+    "${path.module}/platform/governance/resource-quota.yaml",
+    "${path.module}/platform/network-policies/default-deny.yaml",
+    "${path.module}/platform/network-policies/allow-ingress.yaml",
+    "${path.module}/platform/security/secret-provider-class.yaml",
+    "${path.module}/platform/security/csi-driver.yaml"
   ]
+}
+
+resource "kubernetes_manifest" "platform_yaml" {
+  for_each = toset(local.platform_yamls)
+
+  manifest = yamldecode(file(each.value))
+
+  depends_on = [kubernetes_namespace.namespaces]
+}
+
+##############################
+# Helm Release: Observability (Prometheus + Grafana)
+##############################
+
+resource "helm_release" "observability" {
+  name       = "observability"
+  namespace  = "platform-observability"
+  chart      = "${path.module}/platform/observability"
+  create_namespace = true
+  values     = [file("${path.module}/platform/observability/values.yaml")]
+
+  depends_on = [kubernetes_namespace.namespaces]
+}
+
+##############################
+# Helm Release: Ingress Controller (NGINX)
+##############################
+
+resource "helm_release" "ingress" {
+  name       = "nginx-ingress"
+  namespace  = "platform-ingress"
+  chart      = "ingress-nginx/ingress-nginx"  # Public chart from stable repo
+  create_namespace = true
+  values     = [file("${path.module}/platform/ingress/values.yaml")]
+
+  depends_on = [kubernetes_namespace.namespaces]
 }

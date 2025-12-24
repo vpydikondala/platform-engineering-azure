@@ -14,3 +14,7 @@ variable "cluster_name" {
 variable "kubeconfig" {
   type = any
 }
+variable "namespaces" {
+  type    = list(string)
+  default = ["team-a-namespace", "team-b-namespace", "platform-observability", "platform-ingress"]
+}
