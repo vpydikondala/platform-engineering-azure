@@ -2,7 +2,7 @@ name: Terraform Platform Foundation
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
       - "terraform/**"
   workflow_dispatch:
@@ -19,13 +19,22 @@ jobs:
       ARM_USE_OIDC: true
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
-      # Option 1 (recommended): set these as GitHub Repo Variables
+      # Repo Variables (Settings -> Actions -> Variables)
       AKS_RG: ${{ vars.AKS_RG }}
       AKS_NAME: ${{ vars.AKS_NAME }}
 
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
+
+      - name: Validate AKS variables
+        run: |
+          echo "AKS_RG=${AKS_RG:-<empty>}"
+          echo "AKS_NAME=${AKS_NAME:-<empty>}"
+          if [ -z "${AKS_RG:-}" ] || [ -z "${AKS_NAME:-}" ]; then
+            echo "ERROR: AKS_RG or AKS_NAME is empty. Set them in Settings -> Actions -> Variables."
+            exit 1
+          fi
 
       - name: Azure Login via OIDC
         uses: azure/login@v1
@@ -35,93 +44,50 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           allow-no-subscriptions: true
 
+      - name: Azure diagnostics
+        run: |
+          az version
+          az account show -o table
+          az extension list -o table
+          az extension remove -n aks-preview || true
+
       - name: Terraform Init
         run: terraform init -upgrade
         working-directory: terraform
-      - name: Show Terraform & provider versions
-        working-directory: terraform
-        run: |
-          terraform version
-          terraform providers
-      - name: Show locked provider versions
-        working-directory: terraform
-        run: |
-          sed -n '/provider "registry.terraform.io\/hashicorp\/helm"/,/^}/p' .terraform.lock.hcl || true
-          sed -n '/provider "registry.terraform.io\/hashicorp\/kubernetes"/,/^}/p' .terraform.lock.hcl || true
 
-
-      # 1) Bootstrap AKS first so kubeconfig exists
-      - name: Terraform Apply AKS Bootstrap
-        run: terraform apply -var-file=terraform.tfvars -auto-approve -target=azurerm_resource_group.platform -target=module.aks
+      # 1) Bootstrap RG + AKS (safe on first run; minimal/no-op later)
+      - name: Terraform Apply Bootstrap (RG + AKS)
+        run: |
+          terraform apply -var-file=terraform.tfvars -auto-approve \
+            -target=azurerm_resource_group.platform \
+            -target=module.aks
         working-directory: terraform
 
-      - name: Azure CLI diagnostics
+      # 2) Install kubectl + kubelogin using Azure CLI (no GitHub token required)
+      - name: Install kubectl + kubelogin
         run: |
-          az version
-          az extension list -o table
-          az extension remove -n aks-preview || true
-      - name: Install kubelogin (deterministic)
-        run: |
-          set -e
-          sudo apt-get update
-          sudo apt-get install -y unzip
-          curl -sL https://github.com/Azure/kubelogin/releases/download/v0.2.13/kubelogin-linux-amd64.zip -o /tmp/kubelogin.zip
-          sudo unzip -o /tmp/kubelogin.zip -d /usr/local/bin
-          sudo chmod +x /usr/local/bin/kubelogin
-          echo "/usr/local/bin" >> $GITHUB_PATH
-          which kubelogin
-          kubelogin --version
+          az aks install-cli
+          /usr/local/bin/kubectl version --client || true
+          /usr/local/bin/kubelogin --version || true
 
-      - name: Convert kubeconfig for AAD
-        run: |
-          echo "KUBECONFIG=$GITHUB_WORKSPACE/terraform/.kube/config" >> $GITHUB_ENV
-          kubelogin convert-kubeconfig -l azurecli --kubeconfig $KUBECONFIG
-          kubectl get nodes
-
-      # 2) Create kubeconfig for Terraform Kubernetes provider
-      - name: Install kubelogin (fixed path)
+      # 3) Get kubeconfig and convert for AAD
+      - name: Get AKS kubeconfig + convert for AAD
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y unzip curl
-
-          KUBELOGIN_VER="v0.2.13"
-          TMP_DIR="$(mktemp -d)"
-
-          curl -sL "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VER}/kubelogin-linux-amd64.zip" -o "${TMP_DIR}/kubelogin.zip"
-          unzip -q "${TMP_DIR}/kubelogin.zip" -d "${TMP_DIR}"
-
-          sudo mv "${TMP_DIR}/bin/linux_amd64/kubelogin" /usr/local/bin/kubelogin
-          sudo chmod +x /usr/local/bin/kubelogin
-
-          echo "/usr/local/bin" >> $GITHUB_PATH
-          which kubelogin
-          kubelogin --version
-
-      - name: Install kubelogin (fallback)
-        run: |
-          if ! command -v kubelogin >/dev/null 2>&1; then
-            echo "kubelogin not found, installing..."
-            curl -sL https://github.com/Azure/kubelogin/releases/download/v0.2.13/kubelogin-linux-amd64.zip -o /tmp/kubelogin.zip
-            sudo unzip -o /tmp/kubelogin.zip -d /usr/local/bin
-            sudo chmod +x /usr/local/bin/kubelogin
-          fi
-          kubelogin --version
-      - name: Verify Azure context
-        run: az account show -o table
-      - name: Get AKS kubeconfig
-        run: |
           mkdir -p $GITHUB_WORKSPACE/terraform/.kube
-          az aks get-credentials -g "$AKS_RG" -n "$AKS_NAME" \
-            --file $GITHUB_WORKSPACE/terraform/.kube/config --overwrite-existing --only-show-errors
-      - name: Convert kubeconfig for AAD
-        run: |
-          kubelogin convert-kubeconfig -l azurecli \
-            --kubeconfig $GITHUB_WORKSPACE/terraform/.kube/config
-          echo "KUBECONFIG=$GITHUB_WORKSPACE/terraform/.kube/config" >> $GITHUB_ENV
-          kubectl get nodes
 
-      # 3) Now plan/apply the full stack (including kubernetes_manifest)
+          az aks get-credentials -g "$AKS_RG" -n "$AKS_NAME" \
+            --file $GITHUB_WORKSPACE/terraform/.kube/config \
+            --overwrite-existing --only-show-errors
+
+          /usr/local/bin/kubelogin convert-kubeconfig -l azurecli \
+            --kubeconfig $GITHUB_WORKSPACE/terraform/.kube/config
+
+          echo "KUBECONFIG=$GITHUB_WORKSPACE/terraform/.kube/config" >> $GITHUB_ENV
+
+          /usr/local/bin/kubectl --kubeconfig $GITHUB_WORKSPACE/terraform/.kube/config get nodes
+
+      # 4) Now plan/apply full stack (kubernetes_manifest + helm_release)
       - name: Terraform Plan
         run: terraform plan -var-file=terraform.tfvars
         working-directory: terraform
