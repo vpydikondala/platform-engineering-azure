@@ -27,6 +27,8 @@ terraform {
 # Azure provider
 provider "azurerm" { 
   features {} 
+  # Enable OIDC login for GitHub Actions
+  use_oidc = true
 }
 
 # Kubernetes provider (AKS)
