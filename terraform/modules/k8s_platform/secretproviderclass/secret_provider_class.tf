@@ -12,12 +12,21 @@ resource "kubernetes_manifest" "csi_driver" {
 # SecretProviderClass for Azure Key Vault
 ##############################
 resource "kubernetes_manifest" "secretproviderclass" {
-  manifest = yamldecode(templatefile("${path.module}/secret-provider-class.yaml.tpl", {
-    keyvault_name      = var.keyvault_name
-    tenant_id          = var.tenant_id
-    platform_namespace = var.platform_namespace
-    objects            = jsonencode(var.objects)
+  manifest = yamldecode(jsonencode({
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = "azure-keyvault"
+      namespace = var.platform_namespace
+    }
+    spec = {
+      provider   = "azure"
+      parameters = {
+        keyvaultName = var.keyvault_name
+        tenantId     = var.tenant_id
+        objects      = var.objects
+      }
+    }
   }))
-
-  depends_on = [kubernetes_namespace.namespaces, kubernetes_manifest.csi_driver]
 }
+
