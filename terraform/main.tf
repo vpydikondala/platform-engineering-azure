@@ -1,4 +1,4 @@
-#data "azurerm_client_config" "current" {}
+data "azurerm_client_config" "current" {}
 module "aks" {
   source          = "./modules/aks"
   resource_group  = var.resource_group
@@ -39,7 +39,7 @@ module "secret_provider_class" {
     }
   ]
    # Ensure Terraform knows the dependency
- depends_on = [module.keyvault,module.k8s_platform,kubernetes_namespace_v1.platform]
+ #depends_on = [module.keyvault,module.k8s_platform,kubernetes_namespace_v1.platform]
 }
 
 
