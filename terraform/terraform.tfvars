@@ -1,10 +1,7 @@
 location            = "uksouth"
 resource_group = "rg-platform-engineering"
 aks_name            = "aks-platform"
-teams = {
-  "team-a" = "team-a-namespace"
-  "team-b" = "team-b-namespace"
-}
+teams = ["team-a", "team-b"]
 
 dns_prefix = "platformaks"
 

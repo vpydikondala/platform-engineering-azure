@@ -3,10 +3,10 @@
 ##############################
 
 resource "kubernetes_namespace" "namespaces" {
-  for_each = { for ns in var.namespaces : ns => ns }
+  for_each = toset(var.teams)  # use var.teams for multi-team namespaces
 
   metadata {
-    name = each.key
+    name = "${each.key}-namespace"
   }
 }
 
@@ -38,11 +38,11 @@ resource "kubernetes_manifest" "platform_yaml" {
 ##############################
 
 resource "helm_release" "observability" {
-  name       = "observability"
-  namespace  = "platform-observability"
-  chart      = "${path.module}/platform/observability"
+  name             = "observability"
+  namespace        = "platform-observability"
+  chart            = "${path.module}/platform/observability"
   create_namespace = true
-  values     = [file("${path.module}/platform/observability/values.yaml")]
+  values           = [file("${path.module}/platform/observability/values.yaml")]
 
   depends_on = [kubernetes_namespace.namespaces]
 }
@@ -52,11 +52,11 @@ resource "helm_release" "observability" {
 ##############################
 
 resource "helm_release" "ingress" {
-  name       = "nginx-ingress"
-  namespace  = "platform-ingress"
-  chart      = "ingress-nginx/ingress-nginx"  # Public chart from stable repo
+  name             = "nginx-ingress"
+  namespace        = "platform-ingress"
+  chart            = "ingress-nginx/ingress-nginx"  # Public chart from stable repo
   create_namespace = true
-  values     = [file("${path.module}/platform/ingress/values.yaml")]
+  values           = [file("${path.module}/platform/ingress/values.yaml")]
 
   depends_on = [kubernetes_namespace.namespaces]
 }
