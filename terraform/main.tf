@@ -44,16 +44,11 @@ module "secret_provider_class" {
 
 
 module "k8s_platform" {
-  source     = "./modules/k8s_platform"
-  cluster_name   = module.aks.aks_name
-  # pass the AKS module as input
-  kubeconfig = module.aks.kube_config
+  source        = "./modules/k8s_platform"
+  cluster_name  = module.aks.aks_name
+  kubeconfig    = module.aks.kube_config
+  teams         = var.teams
 
-  teams      = var.teams
-  aks_depends_on = [local_file.kubeconfig] 
-    depends_on = [
-    module.aks,        # ensures AKS exists first
-    module.aad_groups ,
-     # ensures AD groups exist first
-  ]
+  aks_depends_on = [module.aks]
 }
+
