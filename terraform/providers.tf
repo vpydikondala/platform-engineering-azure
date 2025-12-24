@@ -40,6 +40,7 @@ provider "azurerm" {
 # Kubernetes provider
 # main.tf
 provider "kubernetes" {
+  alias                  = "aks"
   host                   = module.aks.kube_config[0].host
   client_certificate     = base64decode(module.aks.kube_config[0].client_certificate)
   client_key             = base64decode(module.aks.kube_config[0].client_key)
