@@ -67,8 +67,22 @@ jobs:
           kubectl get nodes
 
       # 2) Create kubeconfig for Terraform Kubernetes provider
-      - name: Install kubelogin (via Azure CLI)
+      - name: Install kubectl + kubelogin
         run: az aks install-cli
+      - name: Ensure kubelogin is on PATH
+        run: |
+          echo "/usr/local/bin" >> $GITHUB_PATH
+          which kubelogin
+          kubelogin --version
+      - name: Install kubelogin (fallback)
+        run: |
+          if ! command -v kubelogin >/dev/null 2>&1; then
+            echo "kubelogin not found, installing..."
+            curl -sL https://github.com/Azure/kubelogin/releases/download/v0.2.13/kubelogin-linux-amd64.zip -o /tmp/kubelogin.zip
+            sudo unzip -o /tmp/kubelogin.zip -d /usr/local/bin
+            sudo chmod +x /usr/local/bin/kubelogin
+          fi
+          kubelogin --version
       - name: Verify Azure context
         run: az account show -o table
       - name: Get AKS kubeconfig
