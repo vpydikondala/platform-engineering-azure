@@ -45,10 +45,10 @@ module "secret_provider_class" {
 
 module "k8s_platform" {
   source        = "./modules/k8s_platform"
-  cluster_name  = module.aks.aks_name
-  kubeconfig    = module.aks.kube_config
+ cluster_name  = module.aks.aks_name
+ kubeconfig    = module.aks.kube_config
   teams         = var.teams
 
-  aks_depends_on = [module.aks, module.aad_groups]
+  depends_on = [module.aks, module.aad_groups]
 }
 

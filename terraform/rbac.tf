@@ -13,7 +13,7 @@ resource "kubernetes_role_v1" "team_role" {
   }
 }
 
-resource "kubernetes_role_binding" "team_binding" {
+resource "kubernetes_role_binding_v1" "team_binding" {
   for_each = var.teams
 
   metadata {

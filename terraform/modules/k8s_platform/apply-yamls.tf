@@ -28,7 +28,7 @@ locals {
 resource "kubernetes_manifest" "platform_yaml" {
   for_each = toset(local.platform_yamls)
   manifest = yamldecode(file(each.value))
-  depends_on = []  # Pass from root module
+   # Pass from root module
 }
 
 
