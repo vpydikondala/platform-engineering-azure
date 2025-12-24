@@ -56,8 +56,10 @@ module "k8s_platform" {
   kubeconfig = module.aks.kube_config
 
   teams      = var.teams
+  aks_depends_on = [module.aks.aks_name]
     depends_on = [
     module.aks,        # ensures AKS exists first
-    module.aad_groups  # ensures AD groups exist first
+    module.aad_groups ,
+     # ensures AD groups exist first
   ]
 }

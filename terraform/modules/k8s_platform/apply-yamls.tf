@@ -26,12 +26,11 @@ locals {
 }
 
 resource "kubernetes_manifest" "platform_yaml" {
-  for_each = local.platform_yamls
-
+  for_each = toset(local.platform_yamls)
   manifest = yamldecode(file(each.value))
-
-  depends_on = [module.aks]  # Ensure AKS cluster exists first
+  depends_on = [var.aks_depends_on]  # Pass from root module
 }
+
 
 
 

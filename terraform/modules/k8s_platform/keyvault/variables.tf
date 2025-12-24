@@ -16,3 +16,4 @@ variable "platform_namespace" {
   type        = string
   default     = "platform-security"
 }
+
